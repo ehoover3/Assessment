@@ -23,7 +23,7 @@ describe("InvoiceCalculator", () => {
 
   describe("validateDate", () => {
     test("accepts valid dates", () => {
-      expect(() => InvoiceCalculator.validateDate("2024-02-29")).not.toThrow(); // leap year
+      expect(() => InvoiceCalculator.validateDate("2024-02-29")).not.toThrow();
     });
 
     test("throws error for invalid dates", () => {
@@ -71,7 +71,7 @@ describe("InvoiceCalculator", () => {
 
   describe("getDailyRate", () => {
     test("calculates rate correctly", () => {
-      const sub = { id: 1, subscriptionCostPerMonthInCents: 3100 }; // 31 days
+      const sub = { id: 1, subscriptionCostPerMonthInCents: 3100 };
       const calc = new InvoiceCalculator("2025-10", validUsers, sub);
       expect(calc.getDailyRate()).toBeCloseTo(100);
     });
@@ -79,8 +79,8 @@ describe("InvoiceCalculator", () => {
 
   describe("getUserActiveDays", () => {
     const calc = new InvoiceCalculator("2025-10", [], validSubscription);
-    const start = new Date(Date.UTC(2025, 9, 1)); // Oct 1
-    const end = new Date(Date.UTC(2025, 9, 31)); // Oct 31
+    const start = new Date(Date.UTC(2025, 9, 1));
+    const end = new Date(Date.UTC(2025, 9, 31));
 
     test("handles user active entire month", () => {
       const user = { id: 1, dateActivated: "2025-01-01", dateDeactivated: null };
@@ -106,9 +106,9 @@ describe("InvoiceCalculator", () => {
   describe("getTotalActiveDays", () => {
     test("sums active days correctly", () => {
       const users = [
-        { id: 1, dateActivated: "2025-10-01", dateDeactivated: "2025-10-10" }, // 10
-        { id: 2, dateActivated: "2025-10-10", dateDeactivated: null }, // 22
-        { id: 3, dateActivated: null, dateDeactivated: null }, // 0
+        { id: 1, dateActivated: "2025-10-01", dateDeactivated: "2025-10-10" },
+        { id: 2, dateActivated: "2025-10-10", dateDeactivated: null },
+        { id: 3, dateActivated: null, dateDeactivated: null },
       ];
       const calc = new InvoiceCalculator("2025-10", users, validSubscription);
       expect(calc.getTotalActiveDays()).toBe(32);
@@ -118,12 +118,12 @@ describe("InvoiceCalculator", () => {
   describe("generateInvoiceTotal", () => {
     test("calculates final invoice total", () => {
       const users = [
-        { id: 1, dateActivated: "2025-10-01", dateDeactivated: "2025-10-15" }, // 15
-        { id: 2, dateActivated: "2025-10-10", dateDeactivated: null }, // 22
+        { id: 1, dateActivated: "2025-10-01", dateDeactivated: "2025-10-15" },
+        { id: 2, dateActivated: "2025-10-10", dateDeactivated: null },
       ];
-      const sub = { id: 1, subscriptionCostPerMonthInCents: 6200 }; // $62 → $2/day for Oct
+      const sub = { id: 1, subscriptionCostPerMonthInCents: 6200 };
       const calc = new InvoiceCalculator("2025-10", users, sub);
-      expect(calc.generateInvoiceTotal()).toBeCloseTo((15 + 22) * 2); // 37 * $2 = $74.00
+      expect(calc.generateInvoiceTotal()).toBeCloseTo((15 + 22) * 2);
     });
   });
 });

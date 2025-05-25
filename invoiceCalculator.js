@@ -76,7 +76,7 @@ class InvoiceCalculator {
   getTotalActiveDays() {
     const [year, month] = this.month.split("-").map(Number);
     const monthStart = new Date(Date.UTC(year, month - 1, 1));
-    const monthEnd = new Date(Date.UTC(year, month, 0)); // Last day of the month
+    const monthEnd = new Date(Date.UTC(year, month, 0));
     return this.users.reduce((total, user) => total + this.getUserActiveDays(user, monthStart, monthEnd), 0);
   }
 
