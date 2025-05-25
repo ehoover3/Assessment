@@ -1,5 +1,5 @@
 const { describe, test, expect } = require("@jest/globals");
-const InvoiceCalculator = require("./index.js");
+const InvoiceCalculator = require("./invoiceCalculator.js");
 
 describe("InvoiceCalculator", () => {
   const validUsers = [
