@@ -1,4 +1,4 @@
-const InvoiceCalculator = require("./index.js");
+const InvoiceCalculator = require("./invoiceCalculator.js");
 
 const month = "2025-10";
 const users = [
