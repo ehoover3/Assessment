@@ -1,3 +1,91 @@
+class InvoiceCalculator {
+  constructor(month, users, subscription) {
+    this.month = month;
+    this.users = users;
+    this.subscription = subscription;
+    this.validateInputs();
+  }
+
+  validateInputs() {
+    InvoiceCalculator.validateMonth(this.month);
+    InvoiceCalculator.validateUsers(this.users);
+    InvoiceCalculator.validateSubscription(this.subscription);
+  }
+
+  static validateMonth(month) {
+    if (typeof month !== "string") throw new TypeError("Month must be a string.");
+    const parts = month.split("-");
+    if (parts.length !== 2) throw new Error('Invalid format. Expected "YYYY-MM".');
+    const [yearString, monthString] = parts;
+    if (yearString.length !== 4) throw new Error("Year must be 4 digits.");
+    const yearNumber = Number(yearString);
+    if (isNaN(yearNumber) || yearNumber < 1000) throw new Error("Year must be a valid number >= 1000.");
+    if (monthString.length !== 2) throw new Error("Month must be zero-padded to two digits.");
+    const monthNumber = Number(monthString);
+    if (isNaN(monthNumber) || monthNumber < 1 || monthNumber > 12) throw new Error("Month must be between 01 and 12.");
+  }
+
+  static validateDate(dateString) {
+    if (typeof dateString !== "string") throw new TypeError("Date must be a string.");
+    const parts = dateString.split("-");
+    if (parts.length !== 3) throw new Error('Expected "YYYY-MM-DD".');
+    const [year, month, day] = parts.map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    if (date.getUTCFullYear() !== year || date.getUTCMonth() + 1 !== month || date.getUTCDate() !== day) {
+      throw new Error(`${dateString} is not a valid calendar date.`);
+    }
+  }
+
+  static validateUsers(users) {
+    if (!Array.isArray(users)) throw new TypeError("Users must be an array.");
+    users.forEach((user, i) => {
+      if (typeof user !== "object" || user === null) throw new Error(`User at index ${i} is not valid.`);
+      if (!Number.isInteger(user.id)) throw new Error(`User ${i} must have a valid integer ID.`);
+      if (user.dateActivated) InvoiceCalculator.validateDate(user.dateActivated);
+      if (user.dateDeactivated) InvoiceCalculator.validateDate(user.dateDeactivated);
+    });
+  }
+
+  static validateSubscription(sub) {
+    if (typeof sub !== "object" || sub === null) throw new TypeError("Subscription must be an object.");
+    if (!Number.isInteger(sub.id)) throw new Error("Subscription must have an integer ID.");
+    const cost = sub.subscriptionCostPerMonthInCents;
+    if (typeof cost !== "number" || isNaN(cost) || cost < 0) throw new Error("subscriptionCostPerMonthInCents must be a non-negative number.");
+  }
+
+  getDaysInMonth() {
+    const [year, month] = this.month.split("-").map(Number);
+    return new Date(Date.UTC(year, month, 0)).getUTCDate();
+  }
+
+  getDailyRate() {
+    return this.subscription.subscriptionCostPerMonthInCents / this.getDaysInMonth();
+  }
+
+  getUserActiveDays(user, monthStart, monthEnd) {
+    if (!user.dateActivated) return 0;
+    const activated = new Date(`${user.dateActivated}T00:00:00Z`);
+    const deactivated = user.dateDeactivated ? new Date(`${user.dateDeactivated}T00:00:00Z`) : null;
+    const activeStart = activated > monthStart ? activated : monthStart;
+    const activeEnd = deactivated && deactivated < monthEnd ? deactivated : monthEnd;
+    if (activeStart > activeEnd) return 0;
+    const millisecondsPerDay = 1000 * 60 * 60 * 24;
+    return Math.round((activeEnd - activeStart) / millisecondsPerDay) + 1;
+  }
+
+  getTotalActiveDays() {
+    const [year, month] = this.month.split("-").map(Number);
+    const monthStart = new Date(Date.UTC(year, month - 1, 1));
+    const monthEnd = new Date(Date.UTC(year, month, 0)); // Last day of the month
+    return this.users.reduce((total, user) => total + this.getUserActiveDays(user, monthStart, monthEnd), 0);
+  }
+
+  generateInvoiceTotal() {
+    const total = this.getDailyRate() * this.getTotalActiveDays();
+    return Number((total / 100).toFixed(2));
+  }
+}
+
 const month = "2025-10";
 const users = [
   { id: 1, dateActivated: "2010-10-30", dateDeactivated: null },
@@ -8,186 +96,8 @@ const users = [
 ];
 const subscription = { id: 1, subscriptionCostPerMonthInCents: 5000 };
 
-const isMonthInputValid = (month) => {
-  if (typeof month !== "string") {
-    throw new TypeError(`Invalid input type. Expected string, but got ${typeof month}.`);
-  }
-  if (month.trim() === "") {
-    throw new Error("Invalid input. Expected non-empty string, but got empty string.");
-  }
-  const parts = month.split("-");
-  if (parts.length !== 2) {
-    throw new Error(`Invalid format. Expected "YYYY-MM", but got ${month}.`);
-  }
-  const [yearString, monthString] = parts;
-  const year = Number(yearString);
-  const monthNumber = Number(monthString);
-  if (yearString.length !== 4 || isNaN(year)) {
-    throw new Error(`Invalid year. Expected 4 digit year, but got "${yearString}".`);
-  }
-  if (monthString.length !== 2 || isNaN(monthNumber)) {
-    throw new Error(`Invalid month. Expected 2 digit month, but got "${monthString}".`);
-  }
-  if (monthNumber < 1 || monthNumber > 12) {
-    throw new RangeError(`Invalid month number. Expected value from 01 to 12, but got "${monthString}".`);
-  }
-  return true;
-};
+const calculator = new InvoiceCalculator(month, users, subscription);
+const total = calculator.generateInvoiceTotal();
+console.log(`Invoice total: $${total}`);
 
-const isValidDateString = (dateString) => {
-  if (typeof dateString !== "string") {
-    throw new TypeError(`Invalid date string. Expected string, but got ${typeof dateString}.`);
-  }
-  const parts = dateString.split("-");
-  if (parts.length !== 3) {
-    throw new Error(`Invalid date format. Expected "YYYY-MM-DD", but got "${dateString}".`);
-  }
-  const [yearString, monthString, dayString] = parts;
-  const year = Number(yearString);
-  const month = Number(monthString);
-  const day = Number(dayString);
-  if (yearString.length !== 4 || isNaN(year) || monthString.length !== 2 || isNaN(month) || dayString.length !== 2 || isNaN(day)) {
-    throw new Error(`Invalid date components in "${dateString}".`);
-  }
-  if (month < 1 || month > 12) {
-    throw new Error(`Month must be between 01 and 12 in "${dateString}".`);
-  }
-  if (day < 1 || day > 31) {
-    throw new Error(`Day must be between 01 and 31 in "${dateString}".`);
-  }
-  const date = new Date(year, month - 1, day);
-  if (date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day) {
-    throw new Error(`"${dateString}" is not a valid calendar date.`);
-  }
-  return true;
-};
-
-const isUsersInputValid = (users) => {
-  if (!Array.isArray(users)) {
-    throw new TypeError(`Invalid input type. Expected array, but got ${typeof users}.`);
-  }
-  users.forEach((user, index) => {
-    if (typeof user !== "object" || user === null) {
-      throw new TypeError(`User at index ${index} is not a valid object.`);
-    }
-    const { id, dateActivated, dateDeactivated } = user;
-    if (typeof id !== "number") {
-      throw new TypeError(`User at index ${index} has invalid 'id'. Expected type "number", but got "${typeof id}".`);
-    }
-    if (!Number.isInteger(id)) {
-      throw new TypeError(`User at index ${index} has invalid 'id'. Expected an integer, but got a non-integer number: ${id}.`);
-    }
-    if (dateActivated !== null && dateActivated !== undefined && typeof dateActivated !== "string") {
-      throw new TypeError(`User at index ${index} has invalid 'dateActivated'. Expected string or null, but got ${typeof dateActivated}.`);
-    }
-    if (dateDeactivated !== undefined && dateDeactivated !== null && typeof dateDeactivated !== "string") {
-      throw new TypeError(`User at index ${index} has invalid 'dateDeactivated'. Expected string, null, or undefined, but got ${typeof dateDeactivated}.`);
-    }
-    if (typeof dateActivated === "string") {
-      try {
-        isValidDateString(dateActivated);
-      } catch (err) {
-        throw new Error(`Invalid dateActivated for user at index ${index}: ${err.message}`);
-      }
-    }
-    if (typeof dateDeactivated === "string") {
-      try {
-        isValidDateString(dateDeactivated);
-      } catch (err) {
-        throw new Error(`Invalid dateDeactivated for user at index ${index}: ${err.message}`);
-      }
-    }
-  });
-  return true;
-};
-
-const isSubscriptionInputValid = (subscription) => {
-  if (typeof subscription !== "object" || subscription === null) {
-    throw new TypeError(`Invalid subscription. Expected an object, but got ${typeof subscription}.`);
-  }
-  const { id, subscriptionCostPerMonthInCents } = subscription;
-  if (typeof id !== "number") {
-    throw new TypeError(`Invalid subscription 'id'. Expected type "number", but got "${typeof id}".`);
-  }
-  if (!Number.isInteger(id)) {
-    throw new TypeError(`Invalid subscription 'id'. Expected an integer, but got a non-integer number: ${id}.`);
-  }
-  if (typeof subscriptionCostPerMonthInCents !== "number") {
-    throw new TypeError(`Invalid 'subscriptionCostPerMonthInCents'. Expected type "number", but got "${typeof subscriptionCostPerMonthInCents}".`);
-  }
-  if (isNaN(subscriptionCostPerMonthInCents)) {
-    throw new TypeError(`Invalid 'subscriptionCostPerMonthInCents'. Value is NaN, which is not a valid number.`);
-  }
-  if (subscriptionCostPerMonthInCents < 0) {
-    throw new TypeError(`Invalid 'subscriptionCostPerMonthInCents'. Expected a non-negative number, but got ${subscriptionCostPerMonthInCents}.`);
-  }
-  return true;
-};
-
-const getDaysInMonth = (month) => {
-  isMonthInputValid(month);
-  const [yearString, monthString] = month.split("-");
-  const yearNumber = Number(yearString);
-  const monthNumber = Number(monthString);
-  return new Date(yearNumber, monthNumber, 0).getDate();
-};
-
-const getDailyRate = (month, subscription) => {
-  isMonthInputValid(month);
-  isSubscriptionInputValid(subscription);
-  const { subscriptionCostPerMonthInCents } = subscription;
-  const daysInTheMonth = getDaysInMonth(month);
-  let dailyRate = subscriptionCostPerMonthInCents / daysInTheMonth;
-  return dailyRate;
-};
-
-const toUtcDate = (dateString) => {
-  const [y, m, d] = dateString.split("-").map(Number);
-  return new Date(Date.UTC(y, m - 1, d));
-};
-
-const getUserActiveDays = ({ dateActivated, dateDeactivated }, monthStart, monthEnd) => {
-  if (!dateActivated) return 0;
-  const activated = toUtcDate(dateActivated);
-  const deactivated = dateDeactivated ? toUtcDate(dateDeactivated) : null;
-  const activeStart = activated > monthStart ? activated : monthStart;
-  const activeEnd = deactivated && deactivated < monthEnd ? deactivated : monthEnd;
-  if (activeStart > activeEnd) return 0;
-  const msPerDay = 1000 * 60 * 60 * 24;
-  return Math.round((activeEnd - activeStart) / msPerDay) + 1;
-};
-
-const getTotalActiveDays = (month, users) => {
-  isMonthInputValid(month);
-  isUsersInputValid(users);
-  const [yearString, monthString] = month.split("-");
-  const year = Number(yearString);
-  const monthNum = Number(monthString);
-  const monthStart = new Date(Date.UTC(year, monthNum - 1, 1));
-  const monthEnd = new Date(Date.UTC(year, monthNum, 0)); // last day of month
-  return users.reduce((total, user) => total + getUserActiveDays(user, monthStart, monthEnd), 0);
-};
-
-const generateInvoiceTotal = (month, users, subscription) => {
-  isMonthInputValid(month);
-  isUsersInputValid(users);
-  dailyRate = getDailyRate(month, subscription);
-  daysUsed = getTotalActiveDays(month, users);
-  let total = dailyRate * daysUsed;
-  total = total / 100;
-  total = Number(total.toFixed(2));
-  return total;
-};
-
-generateInvoiceTotal(month, users, subscription);
-
-module.exports = {
-  isMonthInputValid,
-  isValidDateString,
-  isUsersInputValid,
-  isSubscriptionInputValid,
-  getDaysInMonth,
-  getDailyRate,
-  getDaysUsed: getTotalActiveDays,
-  generateInvoice: generateInvoiceTotal,
-};
+module.exports = InvoiceCalculator;
