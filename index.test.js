@@ -9,7 +9,27 @@ const users = [
   { id: 5, subscriptionCostPerMonth: 2000, dateActivated: null, dateDeactivated: null },
 ];
 
-describe("Gets days in the month", () => {
+describe("isLeapYear", () => {
+  test("returns true for years divisible by 4", () => {
+    expect(isLeapYear(2024)).toBe(true);
+    expect(isLeapYear(2000)).toBe(true);
+    expect(isLeapYear(1996)).toBe(true);
+  });
+  test("returns false for years not divisible by 4", () => {
+    expect(isLeapYear(2023)).toBe(false);
+    expect(isLeapYear(1900)).toBe(false);
+    expect(isLeapYear(2019)).toBe(false);
+  });
+  test("handles invalid inputs without throwing", () => {
+    expect(isLeapYear(undefined)).toBe(false);
+    expect(isLeapYear(null)).toBe(false);
+    expect(isLeapYear("2024")).toBe(false);
+    expect(isLeapYear(NaN)).toBe(false);
+    expect(isLeapYear({})).toBe(false);
+  });
+});
+
+describe("getDaysInMonth", () => {
   test("returns correct days for valid month inputs", () => {
     expect(getDaysInMonth("2025-01")).toBe(31);
     expect(getDaysInMonth("2025-02")).toBe(28);
