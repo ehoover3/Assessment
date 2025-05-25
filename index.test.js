@@ -58,7 +58,18 @@ describe("getDaysInMonth", () => {
   });
 });
 
-describe("Gets daily rate", () => {});
+describe("getDailyRate", () => {
+  test("calculates daily rate correctly for a user", () => {
+    const month = "2025-10"; // 31 days
+    const user = { subscriptionCostPerMonth: 3100 };
+    expect(getDailyRate(month, user)).toBeCloseTo(100);
+  });
+  test("handles floating point correctly", () => {
+    const month = "2025-02"; // 28 days
+    const user = { subscriptionCostPerMonth: 2800 };
+    expect(getDailyRate(month, user)).toBeCloseTo(100);
+  });
+});
 
 describe("Gets days actively used", () => {});
 
