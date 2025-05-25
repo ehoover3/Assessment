@@ -1,3 +1,5 @@
+const getDaysInMonth = (month) => {};
+
 const getDailyRate = () => {};
 
 const getDaysUsed = () => {};
@@ -10,3 +12,5 @@ const generateInvoice = () => {
   total = getTotal();
   return total;
 };
+
+describe("");
