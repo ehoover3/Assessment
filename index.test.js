@@ -1,4 +1,4 @@
-const { isMonthInputValid, isValidDateString, isUsersInputValid, isSubscriptionInputValid, getDaysInMonth, getDailyRate, getDaysUsed, getTotal, generateInvoice } = require("./index.js");
+const { isMonthInputValid, isValidDateString, isUsersInputValid, isSubscriptionInputValid, getDaysInMonth, getDailyRate, getDaysUsed, generateInvoice } = require("./index.js");
 
 describe("isMonthInputValid", () => {
   test("accepts valid month strings", () => {
@@ -86,21 +86,21 @@ describe("isUsersInputValid", () => {
 
 describe("isSubscriptionInputValid", () => {
   test("accepts valid subscription object", () => {
-    expect(isSubscriptionInputValid({ id: 1, subscriptionCostPerMonth: 1000 })).toBe(true);
+    expect(isSubscriptionInputValid({ id: 1, subscriptionCostPerMonthInCents: 1000 })).toBe(true);
   });
   test("throws error for null or non-object", () => {
     expect(() => isSubscriptionInputValid(null)).toThrow("Expected an object");
     expect(() => isSubscriptionInputValid("string")).toThrow("Expected an object");
   });
   test("throws error for missing or invalid 'id'", () => {
-    expect(() => isSubscriptionInputValid({ subscriptionCostPerMonth: 1000 })).toThrow("subscription 'id'");
-    expect(() => isSubscriptionInputValid({ id: "abc", subscriptionCostPerMonth: 1000 })).toThrow("subscription 'id'");
-    expect(() => isSubscriptionInputValid({ id: 1.5, subscriptionCostPerMonth: 1000 })).toThrow("non-integer number");
+    expect(() => isSubscriptionInputValid({ subscriptionCostPerMonthInCents: 1000 })).toThrow("subscription 'id'");
+    expect(() => isSubscriptionInputValid({ id: "abc", subscriptionCostPerMonthInCents: 1000 })).toThrow("subscription 'id'");
+    expect(() => isSubscriptionInputValid({ id: 1.5, subscriptionCostPerMonthInCents: 1000 })).toThrow("non-integer number");
   });
-  test("throws error for invalid 'subscriptionCostPerMonth'", () => {
-    expect(() => isSubscriptionInputValid({ id: 1, subscriptionCostPerMonth: "free" })).toThrow('Expected type "number"');
-    expect(() => isSubscriptionInputValid({ id: 1, subscriptionCostPerMonth: NaN })).toThrow("Value is NaN");
-    expect(() => isSubscriptionInputValid({ id: 1, subscriptionCostPerMonth: -100 })).toThrow("non-negative number");
+  test("throws error for invalid 'subscriptionCostPerMonthInCents'", () => {
+    expect(() => isSubscriptionInputValid({ id: 1, subscriptionCostPerMonthInCents: "free" })).toThrow('Expected type "number"');
+    expect(() => isSubscriptionInputValid({ id: 1, subscriptionCostPerMonthInCents: NaN })).toThrow("Value is NaN");
+    expect(() => isSubscriptionInputValid({ id: 1, subscriptionCostPerMonthInCents: -100 })).toThrow("non-negative number");
   });
 });
 
@@ -132,12 +132,12 @@ describe("getDaysInMonth", () => {
 describe("getDailyRate", () => {
   test("calculates daily rate correctly for a user", () => {
     const month = "2025-10"; // 31 days
-    const subscription = { id: 1, subscriptionCostPerMonth: 3100 };
+    const subscription = { id: 1, subscriptionCostPerMonthInCents: 3100 };
     expect(getDailyRate(month, subscription)).toBeCloseTo(100);
   });
   test("handles floating point correctly", () => {
     const month = "2025-02"; // 28 days
-    const subscription = { id: 2, subscriptionCostPerMonth: 2800 };
+    const subscription = { id: 2, subscriptionCostPerMonthInCents: 2800 };
     expect(getDailyRate(month, subscription)).toBeCloseTo(100);
   });
 });
