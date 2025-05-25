@@ -1,3 +1,13 @@
+const month = "2025-10";
+const users = [
+  { id: 1, dateActivated: "2010-10-30", dateDeactivated: null },
+  { id: 2, dateActivated: "2025-10-05", dateDeactivated: null },
+  { id: 3, dateActivated: "2025-10-15", dateDeactivated: "2025-10-25" },
+  { id: 4, dateActivated: "2022-10-15", dateDeactivated: "2025-05-05" },
+  { id: 5, dateActivated: null, dateDeactivated: null },
+];
+const subscription = { id: 1, subscriptionCostPerMonth: 5000 };
+
 const isMonthInputValid = (month) => {
   if (typeof month !== "string") {
     throw new TypeError(`Invalid input type. Expected string, but got ${typeof month}.`);
@@ -45,7 +55,7 @@ const isValidDateString = (dateString) => {
   if (day < 1 || day > 31) {
     throw new Error(`Day must be between 01 and 31 in "${dateString}".`);
   }
-  const date = new Date(dateString);
+  const date = new Date(year, month - 1, day);
   if (date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day) {
     throw new Error(`"${dateString}" is not a valid calendar date.`);
   }
@@ -60,36 +70,32 @@ const isUsersInputValid = (users) => {
     if (typeof user !== "object" || user === null) {
       throw new TypeError(`User at index ${index} is not a valid object.`);
     }
-    const { id, subscriptionCostPerMonth, dateActivated, dateDeactivated } = user;
+    const { id, dateActivated, dateDeactivated } = user;
     if (typeof id !== "number") {
       throw new TypeError(`User at index ${index} has invalid 'id'. Expected type "number", but got "${typeof id}".`);
     }
     if (!Number.isInteger(id)) {
       throw new TypeError(`User at index ${index} has invalid 'id'. Expected an integer, but got a non-integer number: ${id}.`);
     }
-    if (typeof subscriptionCostPerMonth !== "number") {
-      throw new TypeError(`User at index ${index} has invalid 'subscriptionCostPerMonth'. Expected type "number", but got "${typeof subscriptionCostPerMonth}".`);
-    }
-    if (isNaN(subscriptionCostPerMonth)) {
-      throw new TypeError(`User at index ${index} has invalid 'subscriptionCostPerMonth'. Value is NaN, which is not a valid number.`);
-    }
-    if (subscriptionCostPerMonth < 0) {
-      throw new TypeError(`User at index ${index} has invalid 'subscriptionCostPerMonth'. Expected a non-negative number, but got ${subscriptionCostPerMonth}.`);
-    }
-    if (dateActivated !== null && typeof dateActivated !== "string") {
+    if (dateActivated !== null && dateActivated !== undefined && typeof dateActivated !== "string") {
       throw new TypeError(`User at index ${index} has invalid 'dateActivated'. Expected string or null, but got ${typeof dateActivated}.`);
     }
-    if (dateDeactivated !== null && typeof dateDeactivated !== "string") {
-      throw new TypeError(`User at index ${index} has invalid 'dateDeactivated'. Expected string or null, but got ${typeof dateDeactivated}.`);
+    if (dateDeactivated !== undefined && dateDeactivated !== null && typeof dateDeactivated !== "string") {
+      throw new TypeError(`User at index ${index} has invalid 'dateDeactivated'. Expected string, null, or undefined, but got ${typeof dateDeactivated}.`);
     }
-    if (typeof dateActivated === "string" && !isValidDateString(dateActivated)) {
-      throw new Error(`User at index ${index} has invalid 'dateActivated'. Expected valid date in "YYYY-MM-DD" format, but got "${dateActivated}".`);
+    if (typeof dateActivated === "string") {
+      try {
+        isValidDateString(dateActivated);
+      } catch (err) {
+        throw new Error(`Invalid dateActivated for user at index ${index}: ${err.message}`);
+      }
     }
-    if (dateDeactivated !== null && typeof dateDeactivated !== "string") {
-      throw new TypeError(`User at index ${index} has invalid 'dateDeactivated'. Expected type "string" or null, but got "${typeof dateDeactivated}".`);
-    }
-    if (typeof dateDeactivated === "string" && !isValidDateString(dateDeactivated)) {
-      throw new Error(`User at index ${index} has invalid 'dateDeactivated'. Expected valid date in "YYYY-MM-DD" format, but got "${dateDeactivated}".`);
+    if (typeof dateDeactivated === "string") {
+      try {
+        isValidDateString(dateDeactivated);
+      } catch (err) {
+        throw new Error(`Invalid dateDeactivated for user at index ${index}: ${err.message}`);
+      }
     }
   });
   return true;
@@ -149,9 +155,13 @@ const generateInvoice = (month, users, subscription) => {
   return total;
 };
 
-getDaysInMonth("2020-04");
+generateInvoice(month, users, subscription);
 
 module.exports = {
+  isMonthInputValid,
+  isValidDateString,
+  isUsersInputValid,
+  isSubscriptionInputValid,
   getDaysInMonth,
   getDailyRate,
   getDaysUsed,
