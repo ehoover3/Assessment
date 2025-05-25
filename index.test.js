@@ -2,12 +2,13 @@ const { getDaysInMonth, getDailyRate, getDaysUsed, getTotal, generateInvoice } =
 
 const month = "2025-10";
 const users = [
-  { id: 1, subscriptionCostPerMonth: 6000, dateActivated: "2010-10-30", dateDeactivated: null },
-  { id: 2, subscriptionCostPerMonth: 5000, dateActivated: "2025-10-05", dateDeactivated: null },
-  { id: 3, subscriptionCostPerMonth: 4000, dateActivated: "2025-10-15", dateDeactivated: "2025-10-25" },
-  { id: 4, subscriptionCostPerMonth: 3000, dateActivated: "2022-10-15", dateDeactivated: "2025-05-05" },
-  { id: 5, subscriptionCostPerMonth: 2000, dateActivated: null, dateDeactivated: null },
+  { id: 1, dateActivated: "2010-10-30", dateDeactivated: null },
+  { id: 2, dateActivated: "2025-10-05", dateDeactivated: null },
+  { id: 3, dateActivated: "2025-10-15", dateDeactivated: "2025-10-25" },
+  { id: 4, dateActivated: "2022-10-15", dateDeactivated: "2025-05-05" },
+  { id: 5, dateActivated: null, dateDeactivated: null },
 ];
+const subscription = { id: 1, subscriptionCostPerMonth: 5000 };
 
 describe("getDaysInMonth", () => {
   test("returns correct days for valid month inputs", () => {
@@ -37,13 +38,13 @@ describe("getDaysInMonth", () => {
 describe("getDailyRate", () => {
   test("calculates daily rate correctly for a user", () => {
     const month = "2025-10"; // 31 days
-    const user = { subscriptionCostPerMonth: 3100 };
-    expect(getDailyRate(month, user)).toBeCloseTo(100);
+    const subscription = { id: 1, subscriptionCostPerMonth: 3100 };
+    expect(getDailyRate(month, subscription)).toBeCloseTo(100);
   });
   test("handles floating point correctly", () => {
     const month = "2025-02"; // 28 days
-    const user = { subscriptionCostPerMonth: 2800 };
-    expect(getDailyRate(month, user)).toBeCloseTo(100);
+    const subscription = { id: 2, subscriptionCostPerMonth: 2800 };
+    expect(getDailyRate(month, subscription)).toBeCloseTo(100);
   });
 });
 
