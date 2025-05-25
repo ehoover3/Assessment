@@ -141,15 +141,20 @@ const getDailyRate = (month, subscription) => {
   return dailyRate;
 };
 
+const toUtcDate = (dateString) => {
+  const [y, m, d] = dateString.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d));
+};
+
 const getUserActiveDays = ({ dateActivated, dateDeactivated }, monthStart, monthEnd) => {
   if (!dateActivated) return 0;
-  const activated = new Date(dateActivated);
-  const deactivated = dateDeactivated ? new Date(dateDeactivated) : null;
+  const activated = toUtcDate(dateActivated);
+  const deactivated = dateDeactivated ? toUtcDate(dateDeactivated) : null;
   const activeStart = activated > monthStart ? activated : monthStart;
   const activeEnd = deactivated && deactivated < monthEnd ? deactivated : monthEnd;
   if (activeStart > activeEnd) return 0;
-  const millisecondsPerDay = 1000 * 60 * 60 * 24;
-  return Math.floor((activeEnd - activeStart) / millisecondsPerDay) + 1;
+  const msPerDay = 1000 * 60 * 60 * 24;
+  return Math.round((activeEnd - activeStart) / msPerDay) + 1;
 };
 
 const getTotalActiveDays = (month, users) => {
@@ -158,13 +163,9 @@ const getTotalActiveDays = (month, users) => {
   const [yearString, monthString] = month.split("-");
   const year = Number(yearString);
   const monthNum = Number(monthString);
-  const firstDayOfMonth = new Date(year, monthNum - 1, 1);
-  const lastDayOfMonth = new Date(year, monthNum, 0);
-  const totalDaysActive = users.reduce((total, user) => {
-    const days = getUserActiveDays(user, firstDayOfMonth, lastDayOfMonth);
-    return total + days;
-  }, 0);
-  return totalDaysActive;
+  const monthStart = new Date(Date.UTC(year, monthNum - 1, 1));
+  const monthEnd = new Date(Date.UTC(year, monthNum, 0)); // last day of month
+  return users.reduce((total, user) => total + getUserActiveDays(user, monthStart, monthEnd), 0);
 };
 
 const generateInvoiceTotal = (month, users, subscription) => {

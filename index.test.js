@@ -140,9 +140,94 @@ describe("getDailyRate", () => {
     const subscription = { id: 2, subscriptionCostPerMonthInCents: 2800 };
     expect(getDailyRate(month, subscription)).toBeCloseTo(100);
   });
+  test("calculates correct rate for February in leap year", () => {
+    const month = "2024-02"; // 29 days (leap year)
+    const subscription = { id: 1, subscriptionCostPerMonthInCents: 2900 };
+    expect(getDailyRate(month, subscription)).toBeCloseTo(100);
+  });
+  test("handles zero cost subscription", () => {
+    const month = "2025-01";
+    const subscription = { id: 1, subscriptionCostPerMonthInCents: 0 };
+    expect(getDailyRate(month, subscription)).toBe(0);
+  });
 });
 
-describe("Gets days actively used", () => {});
+describe("getDaysUsed", () => {
+  test("calculates total active days for multiple users", () => {
+    const month = "2025-10"; // 31 days
+    const users = [
+      { id: 1, dateActivated: "2025-10-01", dateDeactivated: "2025-10-15" }, // 15 days
+      { id: 2, dateActivated: "2025-10-10", dateDeactivated: null }, // 22 days (10th to 31st)
+    ];
+    expect(getDaysUsed(month, users)).toBe(37); // 15 + 22
+  });
+  test("handles users activated before month starts", () => {
+    const month = "2025-10";
+    const users = [
+      { id: 1, dateActivated: "2025-09-15", dateDeactivated: "2025-10-10" }, // 10 days in October
+    ];
+    expect(getDaysUsed(month, users)).toBe(10);
+  });
+  test("handles users deactivated after month ends", () => {
+    const month = "2025-10";
+    const users = [
+      { id: 1, dateActivated: "2025-10-20", dateDeactivated: "2025-11-15" }, // 12 days in October (20th to 31st)
+    ];
+    expect(getDaysUsed(month, users)).toBe(12);
+  });
+  test("handles users active for entire month", () => {
+    const month = "2025-10";
+    const users = [
+      { id: 1, dateActivated: "2025-09-01", dateDeactivated: null }, // All 31 days
+    ];
+    expect(getDaysUsed(month, users)).toBe(31);
+  });
+  test("handles users with null activation date", () => {
+    const month = "2025-10";
+    const users = [
+      { id: 1, dateActivated: null, dateDeactivated: null }, // 0 days
+      { id: 2, dateActivated: "2025-10-01", dateDeactivated: "2025-10-05" }, // 5 days
+    ];
+    expect(getDaysUsed(month, users)).toBe(5);
+  });
+  test("handles users activated after month ends", () => {
+    const month = "2025-10";
+    const users = [
+      { id: 1, dateActivated: "2025-11-01", dateDeactivated: null }, // 0 days
+    ];
+    expect(getDaysUsed(month, users)).toBe(0);
+  });
+  test("handles users deactivated before month starts", () => {
+    const month = "2025-10";
+    const users = [
+      { id: 1, dateActivated: "2025-08-01", dateDeactivated: "2025-09-30" }, // 0 days
+    ];
+    expect(getDaysUsed(month, users)).toBe(0);
+  });
+  test("handles empty users array", () => {
+    const month = "2025-10";
+    const users = [];
+    expect(getDaysUsed(month, users)).toBe(0);
+  });
+  test("handles activation and deactivation on same day", () => {
+    const month = "2025-10";
+    const users = [
+      { id: 1, dateActivated: "2025-10-15", dateDeactivated: "2025-10-15" }, // 1 day
+    ];
+    expect(getDaysUsed(month, users)).toBe(1);
+  });
+  test("handles complex scenario with multiple overlapping users", () => {
+    const month = "2025-10"; // 31 days
+    const users = [
+      { id: 1, dateActivated: "2010-10-30", dateDeactivated: null }, // 31 days (active before month)
+      { id: 2, dateActivated: "2025-10-05", dateDeactivated: null }, // 27 days (5th to 31st)
+      { id: 3, dateActivated: "2025-10-15", dateDeactivated: "2025-10-25" }, // 11 days (15th to 25th)
+      { id: 4, dateActivated: "2022-10-15", dateDeactivated: "2025-05-05" }, // 0 days (deactivated before month)
+      { id: 5, dateActivated: null, dateDeactivated: null }, // 0 days
+    ];
+    expect(getDaysUsed(month, users)).toBe(69); // 31 + 27 + 11 + 0 + 0
+  });
+});
 
 describe("Get total", () => {});
 
