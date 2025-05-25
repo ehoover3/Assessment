@@ -54,7 +54,6 @@ const generateInvoice = (month, users) => {
 getDaysInMonth("2020-04");
 
 module.exports = {
-  isLeapYear,
   getDaysInMonth,
   getDailyRate,
   getDaysUsed,

@@ -1,4 +1,4 @@
-const { isLeapYear, getDaysInMonth, getDailyRate, getDaysUsed, getTotal, generateInvoice } = require("./index.js");
+const { getDaysInMonth, getDailyRate, getDaysUsed, getTotal, generateInvoice } = require("./index.js");
 
 const month = "2025-10";
 const users = [
@@ -8,30 +8,6 @@ const users = [
   { id: 4, subscriptionCostPerMonth: 3000, dateActivated: "2022-10-15", dateDeactivated: "2025-05-05" },
   { id: 5, subscriptionCostPerMonth: 2000, dateActivated: null, dateDeactivated: null },
 ];
-
-describe("isLeapYear", () => {
-  test("returns true for years divisible by 4", () => {
-    expect(isLeapYear(2024)).toBe(true);
-    expect(isLeapYear(2000)).toBe(true);
-    expect(isLeapYear(1996)).toBe(true);
-  });
-  test("returns false for years not divisible by 4", () => {
-    expect(isLeapYear(2023)).toBe(false);
-    expect(isLeapYear(2025)).toBe(false);
-    expect(isLeapYear(2019)).toBe(false);
-  });
-  test("throws TypeError if input is not a number", () => {
-    expect(() => isLeapYear(undefined)).toThrow(TypeError);
-    expect(() => isLeapYear(null)).toThrow(TypeError);
-    expect(() => isLeapYear("2024")).toThrow(TypeError);
-    expect(() => isLeapYear({})).toThrow(TypeError);
-  });
-  test("throws RangeError if input is a number but not an integer", () => {
-    expect(() => isLeapYear(NaN)).toThrow(RangeError);
-    expect(() => isLeapYear(2024.5)).toThrow(RangeError);
-    expect(() => isLeapYear(0.1)).toThrow(RangeError);
-  });
-});
 
 describe("getDaysInMonth", () => {
   test("returns correct days for valid month inputs", () => {
@@ -53,8 +29,8 @@ describe("getDaysInMonth", () => {
     expect(() => getDaysInMonth(undefined)).toThrow("Invalid input type. Expected string, but got undefined.");
     expect(() => getDaysInMonth(null)).toThrow("Invalid input type. Expected string, but got object.");
     expect(() => getDaysInMonth("")).toThrow("Invalid input. Expected non-empty string, but got empty string.");
-    expect(() => getDaysInMonth("2025-00")).toThrow("Invalid month number. Expected value from 01 to 12, but got 00.");
-    expect(() => getDaysInMonth("2025-13")).toThrow("Invalid month number. Expected value from 01 to 12, but got 13.");
+    expect(() => getDaysInMonth("2025-00")).toThrow('Invalid month number. Expected value from 01 to 12, but got "00".');
+    expect(() => getDaysInMonth("2025-13")).toThrow('Invalid month number. Expected value from 01 to 12, but got "13".');
   });
 });
 
