@@ -11,28 +11,27 @@ const users = [
 
 describe("Gets days in the month", () => {
   test("returns correct days for valid month inputs", () => {
-    expect(getDaysInMonth("2025-01").toBe(31));
-    expect(getDaysInMonth("2025-02").toBe(28));
-    expect(getDaysInMonth("2025-03").toBe(31));
-    expect(getDaysInMonth("2025-04").toBe(30));
-    expect(getDaysInMonth("2025-05").toBe(31));
-    expect(getDaysInMonth("2025-06").toBe(30));
-    expect(getDaysInMonth("2025-07").toBe(31));
-    expect(getDaysInMonth("2025-08").toBe(31));
-    expect(getDaysInMonth("2025-09").toBe(30));
-    expect(getDaysInMonth("2025-10").toBe(31));
-    expect(getDaysInMonth("2025-11").toBe(30));
-    expect(getDaysInMonth("2025-12").toBe(31));
-    expect(getDaysInMonth("2028-02").toBe(29)); // leap year
+    expect(getDaysInMonth("2025-01")).toBe(31);
+    expect(getDaysInMonth("2025-02")).toBe(28);
+    expect(getDaysInMonth("2025-03")).toBe(31);
+    expect(getDaysInMonth("2025-04")).toBe(30);
+    expect(getDaysInMonth("2025-05")).toBe(31);
+    expect(getDaysInMonth("2025-06")).toBe(30);
+    expect(getDaysInMonth("2025-07")).toBe(31);
+    expect(getDaysInMonth("2025-08")).toBe(31);
+    expect(getDaysInMonth("2025-09")).toBe(30);
+    expect(getDaysInMonth("2025-10")).toBe(31);
+    expect(getDaysInMonth("2025-11")).toBe(30);
+    expect(getDaysInMonth("2025-12")).toBe(31);
+    expect(getDaysInMonth("2028-02")).toBe(29); // leap year
   });
-  test("returns null for invalid inputs"),
-    () => {
-      expect(getDaysInMonth(undefined).toThrow("Invalid month format"));
-      expect(getDaysInMonth(null).toThrow("Invalid month format"));
-      expect(getDaysInMonth("").toThrow("Invalid month format"));
-      expect(getDaysInMonth("2025-00").toThrow("Invalid month number"));
-      expect(getDaysInMonth("2025-13").toThrow("Invalid month number"));
-    };
+  test("throws errorfor invalid inputs", () => {
+    expect(getDaysInMonth(undefined)).toThrow("Invalid month format");
+    expect(getDaysInMonth(null)).toThrow("Invalid month format");
+    expect(getDaysInMonth("")).toThrow("Invalid month format");
+    expect(getDaysInMonth("2025-00")).toThrow("Invalid month number");
+    expect(getDaysInMonth("2025-13")).toThrow("Invalid month number");
+  });
 });
 
 describe("Gets daily rate", () => {});

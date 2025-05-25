@@ -1,4 +1,13 @@
-const getDaysInMonth = (month) => {};
+const getDaysInMonth = (month) => {
+  if (typeof monthStr !== "string") {
+    throw new Error(`Invalid input type.  Expected string, but got ${typeof monthStr}`);
+  }
+
+  const parts = month.split("-");
+  if (parts.length !== 2) {
+    throw new Error(`Invalid format.  Expected "YYYY-MM", but got ${month}`);
+  }
+};
 
 const getDailyRate = () => {};
 
@@ -13,4 +22,10 @@ const generateInvoice = () => {
   return total;
 };
 
-describe("");
+module.exports = {
+  getDaysInMonth,
+  getDailyRate,
+  getDaysUsed,
+  getTotal,
+  generateInvoice,
+};
