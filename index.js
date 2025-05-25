@@ -1,4 +1,10 @@
 const isLeapYear = (year) => {
+  if (typeof year !== "number") {
+    throw new TypeError(`Invalid input type. Year must be a number, but got ${typeof year}`);
+  }
+  if (!Number.isInteger(year)) {
+    throw new RangeError(`Invalid input value. Year must be an integer, but got ${year}`);
+  }
   const divisibleBy4 = year % 4 === 0;
   if (divisibleBy4) {
     return true;
@@ -67,6 +73,7 @@ const generateInvoice = () => {
 getDaysInMonth("2020-04");
 
 module.exports = {
+  isLeapYear,
   getDaysInMonth,
   getDailyRate,
   getDaysUsed,

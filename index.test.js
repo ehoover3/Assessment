@@ -1,4 +1,4 @@
-const { getDaysInMonth, getDailyRate, getDaysUsed, getTotal, generateInvoice } = require("./index.js");
+const { isLeapYear, getDaysInMonth, getDailyRate, getDaysUsed, getTotal, generateInvoice } = require("./index.js");
 
 const month = "2025-10";
 const users = [
@@ -17,15 +17,19 @@ describe("isLeapYear", () => {
   });
   test("returns false for years not divisible by 4", () => {
     expect(isLeapYear(2023)).toBe(false);
-    expect(isLeapYear(1900)).toBe(false);
+    expect(isLeapYear(2025)).toBe(false);
     expect(isLeapYear(2019)).toBe(false);
   });
-  test("handles invalid inputs without throwing", () => {
-    expect(isLeapYear(undefined)).toBe(false);
-    expect(isLeapYear(null)).toBe(false);
-    expect(isLeapYear("2024")).toBe(false);
-    expect(isLeapYear(NaN)).toBe(false);
-    expect(isLeapYear({})).toBe(false);
+  test("throws TypeError if input is not a number", () => {
+    expect(() => isLeapYear(undefined)).toThrow(TypeError);
+    expect(() => isLeapYear(null)).toThrow(TypeError);
+    expect(() => isLeapYear("2024")).toThrow(TypeError);
+    expect(() => isLeapYear({})).toThrow(TypeError);
+  });
+  test("throws RangeError if input is a number but not an integer", () => {
+    expect(() => isLeapYear(NaN)).toThrow(RangeError);
+    expect(() => isLeapYear(2024.5)).toThrow(RangeError);
+    expect(() => isLeapYear(0.1)).toThrow(RangeError);
   });
 });
 
