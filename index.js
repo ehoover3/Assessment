@@ -6,7 +6,7 @@ const users = [
   { id: 4, dateActivated: "2022-10-15", dateDeactivated: "2025-05-05" },
   { id: 5, dateActivated: null, dateDeactivated: null },
 ];
-const subscription = { id: 1, subscriptionCostPerMonth: 5000 };
+const subscription = { id: 1, subscriptionCostPerMonthInCents: 5000 };
 
 const isMonthInputValid = (month) => {
   if (typeof month !== "string") {
@@ -105,21 +105,21 @@ const isSubscriptionInputValid = (subscription) => {
   if (typeof subscription !== "object" || subscription === null) {
     throw new TypeError(`Invalid subscription. Expected an object, but got ${typeof subscription}.`);
   }
-  const { id, subscriptionCostPerMonth } = subscription;
+  const { id, subscriptionCostPerMonthInCents } = subscription;
   if (typeof id !== "number") {
     throw new TypeError(`Invalid subscription 'id'. Expected type "number", but got "${typeof id}".`);
   }
   if (!Number.isInteger(id)) {
     throw new TypeError(`Invalid subscription 'id'. Expected an integer, but got a non-integer number: ${id}.`);
   }
-  if (typeof subscriptionCostPerMonth !== "number") {
-    throw new TypeError(`Invalid 'subscriptionCostPerMonth'. Expected type "number", but got "${typeof subscriptionCostPerMonth}".`);
+  if (typeof subscriptionCostPerMonthInCents !== "number") {
+    throw new TypeError(`Invalid 'subscriptionCostPerMonthInCents'. Expected type "number", but got "${typeof subscriptionCostPerMonthInCents}".`);
   }
-  if (isNaN(subscriptionCostPerMonth)) {
-    throw new TypeError(`Invalid 'subscriptionCostPerMonth'. Value is NaN, which is not a valid number.`);
+  if (isNaN(subscriptionCostPerMonthInCents)) {
+    throw new TypeError(`Invalid 'subscriptionCostPerMonthInCents'. Value is NaN, which is not a valid number.`);
   }
-  if (subscriptionCostPerMonth < 0) {
-    throw new TypeError(`Invalid 'subscriptionCostPerMonth'. Expected a non-negative number, but got ${subscriptionCostPerMonth}.`);
+  if (subscriptionCostPerMonthInCents < 0) {
+    throw new TypeError(`Invalid 'subscriptionCostPerMonthInCents'. Expected a non-negative number, but got ${subscriptionCostPerMonthInCents}.`);
   }
   return true;
 };
@@ -135,27 +135,50 @@ const getDaysInMonth = (month) => {
 const getDailyRate = (month, subscription) => {
   isMonthInputValid(month);
   isSubscriptionInputValid(subscription);
-  const { subscriptionCostPerMonth } = subscription;
+  const { subscriptionCostPerMonthInCents } = subscription;
   const daysInTheMonth = getDaysInMonth(month);
-  let dailyRate = subscriptionCostPerMonth / daysInTheMonth;
+  let dailyRate = subscriptionCostPerMonthInCents / daysInTheMonth;
   return dailyRate;
 };
 
-const getDaysUsed = () => {};
+const getUserActiveDays = ({ dateActivated, dateDeactivated }, monthStart, monthEnd) => {
+  if (!dateActivated) return 0;
+  const activated = new Date(dateActivated);
+  const deactivated = dateDeactivated ? new Date(dateDeactivated) : null;
+  const activeStart = activated > monthStart ? activated : monthStart;
+  const activeEnd = deactivated && deactivated < monthEnd ? deactivated : monthEnd;
+  if (activeStart > activeEnd) return 0;
+  const millisecondsPerDay = 1000 * 60 * 60 * 24;
+  return Math.floor((activeEnd - activeStart) / millisecondsPerDay) + 1;
+};
 
-const getTotal = () => {};
-
-const generateInvoice = (month, users, subscription) => {
+const getTotalActiveDays = (month, users) => {
   isMonthInputValid(month);
   isUsersInputValid(users);
+  const [yearString, monthString] = month.split("-");
+  const year = Number(yearString);
+  const monthNum = Number(monthString);
+  const firstDayOfMonth = new Date(year, monthNum - 1, 1);
+  const lastDayOfMonth = new Date(year, monthNum, 0);
+  const totalDaysActive = users.reduce((total, user) => {
+    const days = getUserActiveDays(user, firstDayOfMonth, lastDayOfMonth);
+    return total + days;
+  }, 0);
+  return totalDaysActive;
+};
 
+const generateInvoiceTotal = (month, users, subscription) => {
+  isMonthInputValid(month);
+  isUsersInputValid(users);
   dailyRate = getDailyRate(month, subscription);
-  daysUsed = getDaysUsed();
-  total = getTotal();
+  daysUsed = getTotalActiveDays(month, users);
+  let total = dailyRate * daysUsed;
+  total = total / 100;
+  total = Number(total.toFixed(2));
   return total;
 };
 
-generateInvoice(month, users, subscription);
+generateInvoiceTotal(month, users, subscription);
 
 module.exports = {
   isMonthInputValid,
@@ -164,7 +187,6 @@ module.exports = {
   isSubscriptionInputValid,
   getDaysInMonth,
   getDailyRate,
-  getDaysUsed,
-  getTotal,
-  generateInvoice,
+  getDaysUsed: getTotalActiveDays,
+  generateInvoice: generateInvoiceTotal,
 };
