@@ -25,12 +25,12 @@ describe("Gets days in the month", () => {
     expect(getDaysInMonth("2025-12")).toBe(31);
     expect(getDaysInMonth("2028-02")).toBe(29); // leap year
   });
-  test("throws errorfor invalid inputs", () => {
-    expect(getDaysInMonth(undefined)).toThrow("Invalid month format");
-    expect(getDaysInMonth(null)).toThrow("Invalid month format");
-    expect(getDaysInMonth("")).toThrow("Invalid month format");
-    expect(getDaysInMonth("2025-00")).toThrow("Invalid month number");
-    expect(getDaysInMonth("2025-13")).toThrow("Invalid month number");
+  test("throws error for invalid inputs", () => {
+    expect(() => getDaysInMonth(undefined)).toThrow("Invalid input type. Expected string, but got undefined.");
+    expect(() => getDaysInMonth(null)).toThrow("Invalid input type. Expected string, but got object.");
+    expect(() => getDaysInMonth("")).toThrow("Invalid input. Expected non-empty string, but got empty string.");
+    expect(() => getDaysInMonth("2025-00")).toThrow("Invalid month number. Expected value from 01 to 12, but got 00.");
+    expect(() => getDaysInMonth("2025-13")).toThrow("Invalid month number. Expected value from 01 to 12, but got 13.");
   });
 });
 
